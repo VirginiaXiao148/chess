@@ -13,7 +13,7 @@ export function initializeBoard() {
     return initialBoard;
 }
 
-export function isValidMove(pieceType: string, fromRow: number, fromCol: number, toRow: number, toCol: number, toSquare: string | null) {
+export function isValidMove(board: (string | null)[][], pieceType: string, fromRow: number, fromCol: number, toRow: number, toCol: number, toSquare: string | null) {
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
@@ -26,13 +26,13 @@ export function isValidMove(pieceType: string, fromRow: number, fromCol: number,
         case 'pawn':
             return isValidPawnMove(pieceType, fromRow, fromCol, toRow, toCol, toSquare);
         case 'rook':
-            return isValidRookMove(fromRow, fromCol, toRow, toCol);
+            return isValidRookMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
         case 'knight':
             return isValidKnightMove(rowDiff, colDiff);
         case 'bishop':
-            return isValidBishopMove(rowDiff, colDiff);
+            return isValidBishopMove(rowDiff, colDiff) && isPathClear(board, fromRow, fromCol, toRow, toCol);
         case 'queen':
-            return isValidQueenMove(fromRow, fromCol, toRow, toCol);
+            return isValidQueenMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
         case 'king':
             return isValidKingMove(rowDiff, colDiff);
         default:
@@ -95,7 +95,7 @@ export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | '
         for (let col = 0; col < 8; col++) {
             const piece = board[row][col];
             if (piece && piece.includes(opponentColor)) {
-                if (isValidMove(piece, row, col, kingRow, kingCol, board[kingRow][kingCol])) {
+                if (isValidMove(board, piece, row, col, kingRow, kingCol, board[kingRow][kingCol])) {
                     return true;
                 }
             }
@@ -120,7 +120,7 @@ export function isCheckmate(board: (string | null)[][], kingColor: 'white' | 'bl
             const newCol = kingCol + colDiff;
             if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
                 const newSquare = board[newRow][newCol];
-                if (isValidMove(`king-${kingColor}`, kingRow, kingCol, newRow, newCol, newSquare)) {
+                if (isValidMove(board, `king-${kingColor}`, kingRow, kingCol, newRow, newCol, newSquare)) {
                     const newBoard = board.map(row => row.slice());
                     newBoard[newRow][newCol] = `king-${kingColor}`;
                     newBoard[kingRow][kingCol] = null;
@@ -140,7 +140,7 @@ export function isCheckmate(board: (string | null)[][], kingColor: 'white' | 'bl
                 for (let newRow = 0; newRow < 8; newRow++) {
                     for (let newCol = 0; newCol < 8; newCol++) {
                         const newSquare = board[newRow][newCol];
-                        if (isValidMove(piece, row, col, newRow, newCol, newSquare)) {
+                        if (isValidMove(board, piece, row, col, newRow, newCol, newSquare)) {
                             const newBoard = board.map(row => row.slice());
                             newBoard[newRow][newCol] = piece;
                             newBoard[row][col] = null;
@@ -177,7 +177,7 @@ export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black
             if (piece && piece.includes(aiColor)) {
                 for (let toRow = 0; toRow < 8; toRow++) {
                     for (let toCol = 0; toCol < 8; toCol++) {
-                        if (isValidMove(piece, fromRow, fromCol, toRow, toCol, board[toRow][toCol])) {
+                        if (isValidMove(board, piece, fromRow, fromCol, toRow, toCol, board[toRow][toCol])) {
                             const newBoard = board.map(row => row.slice());
                             newBoard[toRow][toCol] = piece;
                             newBoard[fromRow][fromCol] = null;
