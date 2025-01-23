@@ -13,7 +13,12 @@ const Board = () => {
 
   const renderSquare = (row: number, col: number, piece: string | null) => {
     const isDark = (row + col) % 2 === 1;
-    return <Square key={`${row}-${col}`} row={row} col={col} isDark={isDark} piece={piece} />;
+    return <Square key={`${row}-${col}`} row={row} col={col} isDark={isDark} piece={piece} onClick={() => handleSquareClick(row, col)} />;
+  };
+
+  const handleSquareClick = (row: number, col: number) => {
+    // Handle the square click event
+    console.log(`Square clicked: row ${row}, col ${col}`);
   };
 
   return (

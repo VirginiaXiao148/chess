@@ -5,6 +5,7 @@ interface SquareProps {
     row: number;
     col: number;
     piece: string | null;
+    isDark: boolean;
     onClick: (row: number, col: number) => void;
 }
 
