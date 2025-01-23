@@ -1,0 +1,22 @@
+.column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    font-family: Arial, sans-serif;
+    background-color: #f0d9b5; /* Light square */
+}
+
+.row:nth-child(even) .column:nth-child(odd),
+.row:nth-child(odd) .column:nth-child(even) {
+    background-color: #b58863; /* Dark square */
+}
+
+.selected {
+    background-color: #aaf7aa; /* Highlight selected piece */
+}
+
+.piece {
+    cursor: pointer;
+}
