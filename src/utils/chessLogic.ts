@@ -168,6 +168,32 @@ function findKing(board: (string | null)[][], kingColor: 'white' | 'black'): [nu
     return null;
 }
 
+export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black'): (string | null)[][] {
+    const opponentColor = aiColor === 'white' ? 'black' : 'white';
+
+    for (let fromRow = 0; fromRow < 8; fromRow++) {
+        for (let fromCol = 0; fromCol < 8; fromCol++) {
+            const piece = board[fromRow][fromCol];
+            if (piece && piece.includes(aiColor)) {
+                for (let toRow = 0; toRow < 8; toRow++) {
+                    for (let toCol = 0; toCol < 8; toCol++) {
+                        if (isValidMove(piece, fromRow, fromCol, toRow, toCol, board[toRow][toCol])) {
+                            const newBoard = board.map(row => row.slice());
+                            newBoard[toRow][toCol] = piece;
+                            newBoard[fromRow][fromCol] = null;
+                            if (!isKingInCheck(newBoard, aiColor)) {
+                                return newBoard;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return board;
+}
+
 interface Position {
     row: number;
     col: number;

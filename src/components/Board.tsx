@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, isCheckmate } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, isCheckmate, makeAIMove } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 
 const Board = () => {
@@ -32,6 +32,17 @@ const Board = () => {
           alert(`${currentPlayer} wins!`);
         } else {
           setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+          // Make AI move
+          const aiBoard = makeAIMove(newBoard, 'black');
+          setBoard(aiBoard);
+
+          // Check for checkmate after AI move
+          if (isCheckmate(aiBoard, 'white')) {
+            setGameOver(true);
+            alert(`black wins!`);
+          } else {
+            setCurrentPlayer('white');
+          }
         }
       } else {
         setSelectedPiece(null);
