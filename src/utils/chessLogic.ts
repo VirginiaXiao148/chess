@@ -22,27 +22,66 @@ export function isValidMove(pieceType: string, fromRow: number, fromCol: number,
         return false;
     }
 
-    // Add specific piece movement logic here...
-    // For simplicity, let's allow all moves for now
-    return true;
+    switch (pieceType.split('-')[0]) {
+        case 'pawn':
+            return isValidPawnMove(pieceType, fromRow, fromCol, toRow, toCol, toSquare);
+        case 'rook':
+            return isValidRookMove(fromRow, fromCol, toRow, toCol);
+        case 'knight':
+            return isValidKnightMove(rowDiff, colDiff);
+        case 'bishop':
+            return isValidBishopMove(rowDiff, colDiff);
+        case 'queen':
+            return isValidQueenMove(rowDiff, colDiff);
+        case 'king':
+            return isValidKingMove(rowDiff, colDiff);
+        default:
+            return false;
+    }
 }
 
-function isValidPawnMove(fromRow, toRow, colDiff, direction, toSquare) {
+function isValidPawnMove(pieceType: string, fromRow: number, fromCol: number, toRow: number, toCol: number, toSquare: string | null) {
+    const direction = pieceType.includes('white') ? -1 : 1;
+    const startRow = pieceType.includes('white') ? 6 : 1;
+
     // One square forward
-    if (colDiff === 0 && !toSquare.hasAttribute('data-piece')) {
-        return toRow - fromRow === direction;
+    if (fromCol === toCol && toRow === fromRow + direction && !toSquare) {
+        return true;
     }
-    // Two squares forward (first move)
-    if (colDiff === 0 && !toSquare.hasAttribute('data-piece')) {
-        if ((fromRow === 6 && direction === -1) || (fromRow === 1 && direction === 1)) {
-            return toRow - fromRow === 2 * direction;
-        }
+
+    // Two squares forward from starting position
+    if (fromCol === toCol && fromRow === startRow && toRow === fromRow + 2 * direction && !toSquare) {
+        return true;
     }
-    // Capture diagonally
-    if (colDiff === 1 && toSquare.hasAttribute('data-piece')) {
-        return toRow - fromRow === direction;
+
+    // Diagonal capture
+    if (Math.abs(fromCol - toCol) === 1 && toRow === fromRow + direction && toSquare) {
+        return true;
     }
+
     return false;
+}
+
+function isValidRookMove(fromRow: number, fromCol: number, toRow: number, toCol: number) {
+    return fromRow === toRow || fromCol === toCol;
+}
+
+function isValidKnightMove(rowDiff: number, colDiff: number) {
+    return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
+}
+
+function isValidBishopMove(rowDiff: number, colDiff: number) {
+    return rowDiff === colDiff;
+}
+
+function isValidQueenMove(fromRow: number, fromCol: number, toRow: number, toCol: number) {
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
+    return isValidRookMove(fromRow, fromCol, toRow, toCol) || isValidBishopMove(rowDiff, colDiff);
+}
+
+function isValidKingMove(rowDiff: number, colDiff: number) {
+    return rowDiff <= 1 && colDiff <= 1;
 }
 
 function isPathClear(fromRow, fromCol, toRow, toCol) {
