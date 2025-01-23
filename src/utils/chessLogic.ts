@@ -32,7 +32,7 @@ export function isValidMove(pieceType: string, fromRow: number, fromCol: number,
         case 'bishop':
             return isValidBishopMove(rowDiff, colDiff);
         case 'queen':
-            return isValidQueenMove(rowDiff, colDiff);
+            return isValidQueenMove(fromRow, fromCol, toRow, toCol);
         case 'king':
             return isValidKingMove(rowDiff, colDiff);
         default:
@@ -84,7 +84,96 @@ function isValidKingMove(rowDiff: number, colDiff: number) {
     return rowDiff <= 1 && colDiff <= 1;
 }
 
-function isPathClear(fromRow, fromCol, toRow, toCol) {
+export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
+    const kingPosition = findKing(board, kingColor);
+    if (!kingPosition) return false;
+
+    const [kingRow, kingCol] = kingPosition;
+    const opponentColor = kingColor === 'white' ? 'black' : 'white';
+
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = board[row][col];
+            if (piece && piece.includes(opponentColor)) {
+                if (isValidMove(piece, row, col, kingRow, kingCol, board[kingRow][kingCol])) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+export function isCheckmate(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
+    if (!isKingInCheck(board, kingColor)) return false;
+
+    const kingPosition = findKing(board, kingColor);
+    if (!kingPosition) return false;
+
+    const [kingRow, kingCol] = kingPosition;
+
+    // Check if the king can move to a safe position
+    for (let rowDiff = -1; rowDiff <= 1; rowDiff++) {
+        for (let colDiff = -1; colDiff <= 1; colDiff++) {
+            const newRow = kingRow + rowDiff;
+            const newCol = kingCol + colDiff;
+            if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                const newSquare = board[newRow][newCol];
+                if (isValidMove(`king-${kingColor}`, kingRow, kingCol, newRow, newCol, newSquare)) {
+                    const newBoard = board.map(row => row.slice());
+                    newBoard[newRow][newCol] = `king-${kingColor}`;
+                    newBoard[kingRow][kingCol] = null;
+                    if (!isKingInCheck(newBoard, kingColor)) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if any piece can block the check or capture the attacking piece
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = board[row][col];
+            if (piece && piece.includes(kingColor)) {
+                for (let newRow = 0; newRow < 8; newRow++) {
+                    for (let newCol = 0; newCol < 8; newCol++) {
+                        const newSquare = board[newRow][newCol];
+                        if (isValidMove(piece, row, col, newRow, newCol, newSquare)) {
+                            const newBoard = board.map(row => row.slice());
+                            newBoard[newRow][newCol] = piece;
+                            newBoard[row][col] = null;
+                            if (!isKingInCheck(newBoard, kingColor)) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+function findKing(board: (string | null)[][], kingColor: 'white' | 'black'): [number, number] | null {
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            if (board[row][col] === `king-${kingColor}`) {
+                return [row, col];
+            }
+        }
+    }
+    return null;
+}
+
+interface Position {
+    row: number;
+    col: number;
+}
+
+function isPathClear(fromRow: number, fromCol: number, toRow: number, toCol: number): boolean {
     const rowStep = toRow > fromRow ? 1 : toRow < fromRow ? -1 : 0;
     const colStep = toCol > fromCol ? 1 : toCol < fromCol ? -1 : 0;
 
@@ -94,7 +183,7 @@ function isPathClear(fromRow, fromCol, toRow, toCol) {
     while (currentRow !== toRow || currentCol !== toCol) {
         const square = document.querySelector(
             `[data-row="${currentRow}"][data-col="${currentCol}"]`
-        );
+        ) as HTMLElement;
         if (square.hasAttribute('data-piece')) {
             return false; // Obstacle found
         }
