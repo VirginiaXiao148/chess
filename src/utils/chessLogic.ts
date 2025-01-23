@@ -194,12 +194,7 @@ export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black
     return board;
 }
 
-interface Position {
-    row: number;
-    col: number;
-}
-
-function isPathClear(fromRow: number, fromCol: number, toRow: number, toCol: number): boolean {
+function isPathClear(board: (string | null)[][], fromRow: number, fromCol: number, toRow: number, toCol: number): boolean {
     const rowStep = toRow > fromRow ? 1 : toRow < fromRow ? -1 : 0;
     const colStep = toCol > fromCol ? 1 : toCol < fromCol ? -1 : 0;
 
@@ -207,10 +202,7 @@ function isPathClear(fromRow: number, fromCol: number, toRow: number, toCol: num
     let currentCol = fromCol + colStep;
 
     while (currentRow !== toRow || currentCol !== toCol) {
-        const square = document.querySelector(
-            `[data-row="${currentRow}"][data-col="${currentCol}"]`
-        ) as HTMLElement;
-        if (square.hasAttribute('data-piece')) {
+        if (board[currentRow][currentCol] !== null) {
             return false; // Obstacle found
         }
         currentRow += rowStep;
