@@ -9,6 +9,7 @@ const Board = () => {
   const [selectedPiece, setSelectedPiece] = useState<{ row: number, col: number } | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
   const [gameOver, setGameOver] = useState<boolean>(false);
+  const [promotion, setPromotion] = useState<{ row: number, col: number, color: 'white' | 'black' } | null>(null);
 
   useEffect(() => {
     setBoard(initializeBoard());
@@ -16,6 +17,11 @@ const Board = () => {
 
   const handleSquareClick = (row: number, col: number) => {
     if (gameOver) return;
+
+    if (promotion) {
+      // Handle pawn promotion
+      return;
+    }
 
     if (selectedPiece) {
       const piece = board[selectedPiece.row][selectedPiece.col];
@@ -35,6 +41,12 @@ const Board = () => {
             newBoard[row][3] = `rook-${currentPlayer}`;
             newBoard[row][0] = null;
           }
+        }
+
+        // Handle pawn promotion
+        if (piece.includes('pawn') && (row === 0 || row === 7)) {
+          setPromotion({ row, col, color: currentPlayer });
+          return;
         }
 
         // Update moved pieces
@@ -97,15 +109,35 @@ const Board = () => {
     }
   };
 
+  const handlePromotion = (piece: string) => {
+    if (promotion) {
+      const newBoard = board.map(row => row.slice());
+      newBoard[promotion.row][promotion.col] = `${promotion.color}-${piece}`;
+      setBoard(newBoard);
+      setPromotion(null);
+      setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+    }
+  };
+
   const renderSquare = (row: number, col: number, piece: string | null) => {
     const isDark = (row + col) % 2 === 1;
     return <Square key={`${row}-${col}`} row={row} col={col} isDark={isDark} piece={piece} onClick={handleSquareClick} />;
   };
 
   return (
-    <div className={styles.board}>
-      {board.map((row, rowIndex) =>
-        row.map((piece, colIndex) => renderSquare(rowIndex, colIndex, piece))
+    <div>
+      <div className={styles.board}>
+        {board.map((row, rowIndex) =>
+          row.map((piece, colIndex) => renderSquare(rowIndex, colIndex, piece))
+        )}
+      </div>
+      {promotion && (
+        <div className={styles.promotion}>
+          <button onClick={() => handlePromotion('queen')}>Queen</button>
+          <button onClick={() => handlePromotion('rook')}>Rook</button>
+          <button onClick={() => handlePromotion('bishop')}>Bishop</button>
+          <button onClick={() => handlePromotion('knight')}>Knight</button>
+        </div>
       )}
     </div>
   );

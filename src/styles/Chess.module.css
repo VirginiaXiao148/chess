@@ -28,3 +28,16 @@
     font-family: Arial, sans-serif;
     cursor: pointer;
 }
+
+.promotion {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.promotion button {
+    margin: 0 5px;
+    padding: 10px;
+    font-size: 1em;
+    cursor: pointer;
+}

@@ -17,7 +17,7 @@ const pieceSymbols: { [key: string]: { [key: string]: string } } = {
 };
 
 const Piece: React.FC<PieceProps> = ({ type, color, onClick }) => {
-    const pieceSymbol = pieceSymbols[type][color];
+    const pieceSymbol = pieceSymbols[type]?.[color];
 
     return (
         <div className={styles.piece} onClick={onClick}>
