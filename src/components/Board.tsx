@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, isCheckmate, makeAIMove } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, isCheckmate, makeAIMove, setLastMove } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 
 const Board = () => {
@@ -24,6 +24,7 @@ const Board = () => {
         newBoard[row][col] = piece;
         newBoard[selectedPiece.row][selectedPiece.col] = null;
         setBoard(newBoard);
+        setLastMove({ piece, fromRow: selectedPiece.row, fromCol: selectedPiece.col, toRow: row, toCol: col });
         setSelectedPiece(null);
 
         // Check for checkmate

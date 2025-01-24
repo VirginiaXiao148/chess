@@ -22,22 +22,45 @@ export function isValidMove(board: (string | null)[][], pieceType: string, fromR
         return false;
     }
 
+    let isValid = false;
     switch (pieceType.split('-')[0]) {
         case 'pawn':
-            return isValidPawnMove(pieceType, fromRow, fromCol, toRow, toCol, toSquare);
+            isValid = isValidPawnMove(pieceType, fromRow, fromCol, toRow, toCol, toSquare);
+            break;
         case 'rook':
-            return isValidRookMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            isValid = isValidRookMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            break;
         case 'knight':
-            return isValidKnightMove(rowDiff, colDiff);
+            isValid = isValidKnightMove(rowDiff, colDiff);
+            break;
         case 'bishop':
-            return isValidBishopMove(rowDiff, colDiff) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            isValid = isValidBishopMove(rowDiff, colDiff) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            break;
         case 'queen':
-            return isValidQueenMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            isValid = isValidQueenMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
+            break;
         case 'king':
-            return isValidKingMove(rowDiff, colDiff);
+            isValid = isValidKingMove(rowDiff, colDiff);
+            break;
         default:
-            return false;
+            isValid = false;
     }
+
+    if (!isValid) {
+        return false;
+    }
+
+    // Check if the move would put the player's own king in check
+    const newBoard = board.map(row => row.slice());
+    newBoard[toRow][toCol] = pieceType;
+    newBoard[fromRow][fromCol] = null;
+    const playerColor = pieceType.split('-')[1] as 'white' | 'black';
+    if (isKingInCheck(newBoard, playerColor)) {
+        return false;
+    }
+
+    return true;
+
 }
 
 function isValidPawnMove(pieceType: string, fromRow: number, fromCol: number, toRow: number, toCol: number, toSquare: string | null) {
@@ -59,7 +82,27 @@ function isValidPawnMove(pieceType: string, fromRow: number, fromCol: number, to
         return true;
     }
 
+    // En passant capture
+    if (Math.abs(fromCol - toCol) === 1 && toRow === fromRow + direction && !toSquare) {
+        const lastMove = getLastMove();
+        if (lastMove && lastMove.piece.includes('pawn') && Math.abs(lastMove.fromRow - lastMove.toRow) === 2) {
+            if (lastMove.toRow === fromRow && Math.abs(lastMove.toCol - fromCol) === 1) {
+                return true;
+            }
+        }
+    }
+
     return false;
+}
+
+let lastMove: { piece: string, fromRow: number, fromCol: number, toRow: number, toCol: number } | null = null;
+
+export function getLastMove() {
+    return lastMove;
+}
+
+export function setLastMove(move: { piece: string, fromRow: number, fromCol: number, toRow: number, toCol: number }) {
+    lastMove = move;
 }
 
 function isValidRookMove(fromRow: number, fromCol: number, toRow: number, toCol: number) {
@@ -182,6 +225,7 @@ export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black
                             newBoard[toRow][toCol] = piece;
                             newBoard[fromRow][fromCol] = null;
                             if (!isKingInCheck(newBoard, aiColor)) {
+                                setLastMove({ piece, fromRow, fromCol, toRow, toCol });
                                 return newBoard;
                             }
                         }
