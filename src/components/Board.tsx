@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, isCheckmate, makeAIMove, setLastMove } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, isCheckmate, isStalemate, isThreefoldRepetition, isFiftyMoveRule, makeAIMove, setLastMove, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 
 const Board = () => {
@@ -27,10 +27,26 @@ const Board = () => {
         setLastMove({ piece, fromRow: selectedPiece.row, fromCol: selectedPiece.col, toRow: row, toCol: col });
         setSelectedPiece(null);
 
+        // Reset half-move clock if a pawn moves or a capture is made
+        if (piece.includes('pawn') || board[row][col]) {
+          resetHalfMoveClock();
+        } else {
+          incrementHalfMoveClock();
+        }
+
         // Check for checkmate
         if (isCheckmate(newBoard, currentPlayer === 'white' ? 'black' : 'white')) {
           setGameOver(true);
           alert(`${currentPlayer} wins!`);
+        } else if (isStalemate(newBoard, currentPlayer === 'white' ? 'black' : 'white')) {
+          setGameOver(true);
+          alert('Stalemate!');
+        } else if (isThreefoldRepetition(newBoard)) {
+          setGameOver(true);
+          alert('Draw by threefold repetition!');
+        } else if (isFiftyMoveRule()) {
+          setGameOver(true);
+          alert('Draw by fifty-move rule!');
         } else {
           setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
           // Make AI move
@@ -41,6 +57,15 @@ const Board = () => {
           if (isCheckmate(aiBoard, 'white')) {
             setGameOver(true);
             alert(`black wins!`);
+          } else if (isStalemate(aiBoard, 'white')) {
+            setGameOver(true);
+            alert('Stalemate!');
+          } else if (isThreefoldRepetition(aiBoard)) {
+            setGameOver(true);
+            alert('Draw by threefold repetition!');
+          } else if (isFiftyMoveRule()) {
+            setGameOver(true);
+            alert('Draw by fifty-move rule!');
           } else {
             setCurrentPlayer('white');
           }

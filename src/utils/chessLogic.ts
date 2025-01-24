@@ -127,6 +127,30 @@ function isValidKingMove(rowDiff: number, colDiff: number) {
     return rowDiff <= 1 && colDiff <= 1;
 }
 
+// Rule of 50 moves
+let positionHistory: string[] = [];
+let halfMoveClock: number = 0;
+
+export function isThreefoldRepetition(board: (string | null)[][]): boolean {
+    const boardString = board.map(row => row.join(',')).join(';');
+    positionHistory.push(boardString);
+
+    const occurrences = positionHistory.filter(position => position === boardString).length;
+    return occurrences >= 3;
+}
+
+export function isFiftyMoveRule(): boolean {
+    return halfMoveClock >= 50;
+}
+
+export function resetHalfMoveClock() {
+    halfMoveClock = 0;
+}
+
+export function incrementHalfMoveClock() {
+    halfMoveClock++;
+}
+
 export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
     const kingPosition = findKing(board, kingColor);
     if (!kingPosition) return false;
@@ -190,6 +214,28 @@ export function isCheckmate(board: (string | null)[][], kingColor: 'white' | 'bl
                             if (!isKingInCheck(newBoard, kingColor)) {
                                 return false;
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+export function isStalemate(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
+    if (isKingInCheck(board, kingColor)) return false;
+
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = board[row][col];
+            if (piece && piece.includes(kingColor)) {
+                for (let newRow = 0; newRow < 8; newRow++) {
+                    for (let newCol = 0; newCol < 8; newCol++) {
+                        const newSquare = board[newRow][newCol];
+                        if (isValidMove(board, piece, row, col, newRow, newCol, newSquare)) {
+                            return false;
                         }
                     }
                 }
