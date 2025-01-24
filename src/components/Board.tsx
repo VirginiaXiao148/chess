@@ -19,7 +19,7 @@ const Board = () => {
 
     if (selectedPiece) {
       const piece = board[selectedPiece.row][selectedPiece.col];
-      if (piece && isValidMove(piece, selectedPiece.row, selectedPiece.col, row, col, board[row][col])) {
+      if (piece && isValidMove(board, piece, selectedPiece.row, selectedPiece.col, row, col, board[row][col])) {
         const newBoard = board.map(row => row.slice());
         newBoard[row][col] = piece;
         newBoard[selectedPiece.row][selectedPiece.col] = null;
