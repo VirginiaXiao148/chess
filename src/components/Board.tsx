@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, isCheckmate, isStalemate, isThreefoldRepetition, isFiftyMoveRule, makeAIMove, setLastMove, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, isCheckmate, isStalemate, isThreefoldRepetition, isFiftyMoveRule, makeAIMove, setLastMove, resetHalfMoveClock, incrementHalfMoveClock, setKingMoved, setRookMoved } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 
 const Board = () => {
@@ -25,6 +25,25 @@ const Board = () => {
         newBoard[selectedPiece.row][selectedPiece.col] = null;
         setBoard(newBoard);
         setLastMove({ piece, fromRow: selectedPiece.row, fromCol: selectedPiece.col, toRow: row, toCol: col });
+
+        // Handle castling
+        if (piece.includes('king') && Math.abs(col - selectedPiece.col) === 2) {
+          if (col === 6) { // Short castling
+            newBoard[row][5] = `rook-${currentPlayer}`;
+            newBoard[row][7] = null;
+          } else if (col === 2) { // Long castling
+            newBoard[row][3] = `rook-${currentPlayer}`;
+            newBoard[row][0] = null;
+          }
+        }
+
+        // Update moved pieces
+        if (piece.includes('king')) {
+          setKingMoved(currentPlayer);
+        } else if (piece.includes('rook')) {
+          setRookMoved(currentPlayer, selectedPiece.col);
+        }
+
         setSelectedPiece(null);
 
         // Reset half-move clock if a pawn moves or a capture is made

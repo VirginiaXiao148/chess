@@ -151,6 +151,73 @@ export function incrementHalfMoveClock() {
     halfMoveClock++;
 }
 
+// Rule of castling
+
+let kingMoved = { white: false, black: false };
+let rookMoved = { 'white-0': false, 'white-7': false, 'black-0': false, 'black-7': false };
+
+export function setKingMoved(color: 'white' | 'black') {
+    kingMoved[color] = true;
+}
+
+export function setRookMoved(color: 'white' | 'black', col: 0 | 7) {
+    rookMoved[`${color}-${col}`] = true;
+}
+
+function isValidCastling(board: (string | null)[][], pieceType: string, fromRow: number, fromCol: number, toRow: number, toCol: number): boolean {
+    const color = pieceType.split('-')[1];
+    if (kingMoved[color as 'white' | 'black']) {
+        return false;
+    }
+
+    // Short castling
+    if (toCol === fromCol + 2) {
+        if (rookMoved[`${color}-7` as 'white-7' | 'black-7'] || board[fromRow][7] !== `rook-${color}`) {
+            return false;
+        }
+        if (board[fromRow][fromCol + 1] !== null || board[fromRow][fromCol + 2] !== null) return false;
+        if (isKingInCheck(board, color as 'white' | 'black') || 
+            isSquareAttacked(board, fromRow, fromCol + 1, color as 'white' | 'black') || 
+            isSquareAttacked(board, fromRow, fromCol + 2, color as 'white' | 'black')) {
+            return false;
+        }
+        return true;
+    }
+
+    // Long castling
+    if (toCol === fromCol - 2) {
+        if (rookMoved[`${color}-0` as 'white-0' | 'black-0'] || board[fromRow][0] !== `rook-${color}`) {
+            return false;
+        }
+        if (board[fromRow][fromCol - 1] !== null || board[fromRow][fromCol - 2] !== null || board[fromRow][fromCol - 3] !== null) return false;
+        if (isKingInCheck(board, color as 'white' | 'black') || 
+            isSquareAttacked(board, fromRow, fromCol - 1, color as 'white' | 'black') || 
+            isSquareAttacked(board, fromRow, fromCol - 2, color as 'white' | 'black')) {
+            return false;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+function isSquareAttacked(board: (string | null)[][], row: number, col: number, color: 'white' | 'black'): boolean {
+    const opponentColor = color === 'white' ? 'black' : 'white';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = board[r][c];
+            if (piece && piece.includes(opponentColor)) {
+                if (isValidMove(board, piece, r, c, row, col, board[row][col])) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// Check for checkmate and stalemate
+
 export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
     const kingPosition = findKing(board, kingColor);
     if (!kingPosition) return false;
