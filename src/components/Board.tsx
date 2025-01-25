@@ -53,7 +53,9 @@ const Board = () => {
         if (piece.includes('king')) {
           setKingMoved(currentPlayer);
         } else if (piece.includes('rook')) {
-          setRookMoved(currentPlayer, selectedPiece.col);
+          if (selectedPiece.col === 0 || selectedPiece.col === 7) {
+            setRookMoved(currentPlayer, selectedPiece.col);
+          }
         }
 
         setSelectedPiece(null);
