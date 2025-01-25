@@ -1,48 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, setLastMove, isCheckmate, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, setLastMove, isCheckmate, resetHalfMoveClock, incrementHalfMoveClock, makeAIMove } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
-import Stockfish from 'stockfish';
 
 const Board: React.FC = () => {
   const [board, setBoard] = useState(initializeBoard());
   const [selectedPiece, setSelectedPiece] = useState<{ row: number, col: number } | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
   const [promotion, setPromotion] = useState<{ row: number, col: number, color: 'white' | 'black' } | null>(null);
-  const engine = useRef<any>(null);
-
-  useEffect(() => {
-    engine.current = Stockfish();
-    engine.current.onmessage = (message: string) => {
-      console.log("IA dice:", message);
-      if (message.includes('bestmove')) {
-        const move = message.split(' ')[1];
-        handleAIMove(move);
-      }
-    };
-  }, []);
-
-  const sendMoveToEngine = (move: string) => {
-    if (engine.current) {
-      engine.current.postMessage(`position startpos moves ${move}`);
-      engine.current.postMessage("go depth 10");
-    }
-  };
-
-  const handleAIMove = (move: string) => {
-    const fromRow = 8 - parseInt(move[1]);
-    const fromCol = move.charCodeAt(0) - 'a'.charCodeAt(0);
-    const toRow = 8 - parseInt(move[3]);
-    const toCol = move.charCodeAt(2) - 'a'.charCodeAt(0);
-
-    const newBoard = board.map(row => row.slice());
-    newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
-    newBoard[fromRow][fromCol] = null;
-    setBoard(newBoard);
-    setCurrentPlayer('white');
-  };
 
   const handleSquareClick = (row: number, col: number) => {
     if (promotion) return; // Prevent moves during promotion
@@ -62,7 +29,6 @@ const Board: React.FC = () => {
         } else {
           setSelectedPiece(null);
           setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
-          sendMoveToEngine(`${String.fromCharCode(fromCol + 97)}${8 - fromRow}${String.fromCharCode(col + 97)}${8 - row}`);
         }
 
         if (newBoard[row][col]?.includes('pawn') || piece) {
@@ -73,6 +39,13 @@ const Board: React.FC = () => {
 
         if (isCheckmate(newBoard, currentPlayer === 'white' ? 'black' : 'white')) {
           alert(`${currentPlayer} wins by checkmate!`);
+        } else {
+          // IA move
+          if (currentPlayer === 'white') {
+            const aiBoard = makeAIMove(newBoard, 'black');
+            setBoard(aiBoard);
+            setCurrentPlayer('white');
+          }
         }
       } else {
         setSelectedPiece(null);
@@ -93,7 +66,9 @@ const Board: React.FC = () => {
 
       // IA move after promotion
       if (currentPlayer === 'white') {
-        sendMoveToEngine(`${String.fromCharCode(promotion.col + 97)}${8 - promotion.row}${String.fromCharCode(promotion.col + 97)}${8 - promotion.row}${newPiece[0]}`);
+        const aiBoard = makeAIMove(newBoard, 'black');
+        setBoard(aiBoard);
+        setCurrentPlayer('white');
       }
     }
   };

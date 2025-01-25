@@ -1,7 +1,5 @@
 declare module 'stockfish' {
-    const Stockfish: () => {
-      postMessage: (message: string) => void;
-      onmessage: (message: string) => void;
-    };
-    export default Stockfish;
+    const stockfish: () => any;
+    export default stockfish;
   }
+  
