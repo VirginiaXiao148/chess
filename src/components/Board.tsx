@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Square from './Square';
-import { initializeBoard, isValidMove, setLastMove, isCheckmate, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, setLastMove, isCheckmate, resetHalfMoveClock, incrementHalfMoveClock, makeAIMove } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 
 const Board: React.FC = () => {
@@ -39,6 +39,13 @@ const Board: React.FC = () => {
 
         if (isCheckmate(newBoard, currentPlayer === 'white' ? 'black' : 'white')) {
           alert(`${currentPlayer} wins by checkmate!`);
+        } else {
+          // IA move
+          if (currentPlayer === 'white') {
+            const aiBoard = makeAIMove(newBoard, 'black');
+            setBoard(aiBoard);
+            setCurrentPlayer('white');
+          }
         }
       } else {
         setSelectedPiece(null);
@@ -56,6 +63,13 @@ const Board: React.FC = () => {
       setPromotion(null);
       setSelectedPiece(null);
       setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+
+      // IA move after promotion
+      if (currentPlayer === 'white') {
+        const aiBoard = makeAIMove(newBoard, 'black');
+        setBoard(aiBoard);
+        setCurrentPlayer('white');
+      }
     }
   };
 
