@@ -6,7 +6,7 @@ import styles from '../styles/Chess.module.css';
 import Square from './Square';
 
 const Board: React.FC = () => {
-  const [board, setBoard] = useState(initializeBoard());
+  const [board, setBoard] = useState<(string | null)[][]>(initializeBoard());
   const [selectedPiece, setSelectedPiece] = useState<{ row: number, col: number } | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
   const [promotion, setPromotion] = useState<{ row: number, col: number, color: 'white' | 'black' } | null>(null);

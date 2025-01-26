@@ -220,7 +220,9 @@ function isSquareAttacked(board: (string | null)[][], row: number, col: number, 
 
 export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
     const kingPosition = findKing(board, kingColor);
-    if (!kingPosition) return false;
+    if (!kingPosition) {
+        return false;
+    }
 
     const [kingRow, kingCol] = kingPosition;
     const opponentColor = kingColor === 'white' ? 'black' : 'white';
@@ -240,10 +242,14 @@ export function isKingInCheck(board: (string | null)[][], kingColor: 'white' | '
 }
 
 export function isCheckmate(board: (string | null)[][], kingColor: 'white' | 'black'): boolean {
-    if (!isKingInCheck(board, kingColor)) return false;
+    if (!isKingInCheck(board, kingColor)) {
+        return false;
+    }
 
     const kingPosition = findKing(board, kingColor);
-    if (!kingPosition) return false;
+    if (!kingPosition) {
+        return false;
+    }
 
     const [kingRow, kingCol] = kingPosition;
 
@@ -334,7 +340,7 @@ function evaluateBoard(board: (string | null)[][], aiColor: 'white' | 'black'): 
         'bishop': 3,
         'rook': 5,
         'queen': 9,
-        'king': 0 // El rey no tiene valor porque no puede ser capturado
+        'king': 0 // El rey no se cuenta en la evaluación, ya que no puede ser capturado
     };
 
     let score = 0;
