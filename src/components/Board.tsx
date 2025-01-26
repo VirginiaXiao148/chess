@@ -1,15 +1,20 @@
-'use client';
-
 import React, { useState } from 'react';
+import { initializeBoard, isValidMove, makeAIMove, isCheckmate, setLastMove, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
+import styles from './Board.module.css';
 import Square from './Square';
-import { initializeBoard, isValidMove, setLastMove, isCheckmate, resetHalfMoveClock, incrementHalfMoveClock, makeAIMove } from '../utils/chessLogic';
-import styles from '../styles/Chess.module.css';
 
 const Board: React.FC = () => {
   const [board, setBoard] = useState(initializeBoard());
   const [selectedPiece, setSelectedPiece] = useState<{ row: number, col: number } | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
   const [promotion, setPromotion] = useState<{ row: number, col: number, color: 'white' | 'black' } | null>(null);
+
+  const resetGame = () => {
+    setBoard(initializeBoard());
+    setSelectedPiece(null);
+    setCurrentPlayer('white');
+    setPromotion(null);
+  };
 
   const handleSquareClick = (row: number, col: number) => {
     if (promotion) return; // Prevent moves during promotion
@@ -39,6 +44,7 @@ const Board: React.FC = () => {
 
         if (isCheckmate(newBoard, currentPlayer === 'white' ? 'black' : 'white')) {
           alert(`${currentPlayer} wins by checkmate!`);
+          resetGame(); // Reiniciar el juego después de aceptar el mensaje
         } else {
           // IA move
           if (currentPlayer === 'white') {
