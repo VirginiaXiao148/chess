@@ -324,8 +324,68 @@ function findKing(board: (string | null)[][], kingColor: 'white' | 'black'): [nu
     return null;
 }
 
+// AI move
+
+function evaluateBoard(board: (string | null)[][], aiColor: 'white' | 'black'): number {
+    // Implementa una función de evaluación simple que cuenta el material en el tablero
+    const pieceValues: { [key: string]: number } = {
+        'pawn': 1,
+        'knight': 3,
+        'bishop': 3,
+        'rook': 5,
+        'queen': 9,
+        'king': 0 // El rey no tiene valor porque no puede ser capturado
+    };
+
+    let score = 0;
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = board[row][col];
+            if (piece) {
+                const [type, color] = piece.split('-');
+                const value = pieceValues[type];
+                score += (color === aiColor ? value : -value);
+            }
+        }
+    }
+    return score;
+}
+
+function minimax(board: (string | null)[][], depth: number, isMaximizing: boolean, aiColor: 'white' | 'black'): number {
+    if (depth === 0) {
+        return evaluateBoard(board, aiColor);
+    }
+
+    const opponentColor = aiColor === 'white' ? 'black' : 'white';
+    let bestScore = isMaximizing ? -Infinity : Infinity;
+
+    for (let fromRow = 0; fromRow < 8; fromRow++) {
+        for (let fromCol = 0; fromCol < 8; fromCol++) {
+            const piece = board[fromRow][fromCol];
+            if (piece && piece.includes(isMaximizing ? aiColor : opponentColor)) {
+                for (let toRow = 0; toRow < 8; toRow++) {
+                    for (let toCol = 0; toCol < 8; toCol++) {
+                        if (isValidMove(board, piece, fromRow, fromCol, toRow, toCol, board[toRow][toCol])) {
+                            const newBoard = board.map(row => row.slice());
+                            newBoard[toRow][toCol] = piece;
+                            newBoard[fromRow][fromCol] = null;
+                            if (!isKingInCheck(newBoard, isMaximizing ? aiColor : opponentColor)) {
+                                const score = minimax(newBoard, depth - 1, !isMaximizing, aiColor);
+                                bestScore = isMaximizing ? Math.max(bestScore, score) : Math.min(bestScore, score);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return bestScore;
+}
+
 export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black'): (string | null)[][] {
     const opponentColor = aiColor === 'white' ? 'black' : 'white';
+    let bestMove: { fromRow: number, fromCol: number, toRow: number, toCol: number } | null = null;
+    let bestScore = -Infinity;
 
     for (let fromRow = 0; fromRow < 8; fromRow++) {
         for (let fromCol = 0; fromCol < 8; fromCol++) {
@@ -338,14 +398,26 @@ export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black
                             newBoard[toRow][toCol] = piece;
                             newBoard[fromRow][fromCol] = null;
                             if (!isKingInCheck(newBoard, aiColor)) {
-                                setLastMove({ piece, fromRow, fromCol, toRow, toCol });
-                                return newBoard;
+                                const score = minimax(newBoard, 3, false, aiColor);
+                                if (score > bestScore) {
+                                    bestScore = score;
+                                    bestMove = { fromRow, fromCol, toRow, toCol };
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    if (bestMove) {
+        const { fromRow, fromCol, toRow, toCol } = bestMove;
+        const newBoard = board.map(row => row.slice());
+        newBoard[toRow][toCol] = board[fromRow][fromCol];
+        newBoard[fromRow][fromCol] = null;
+        setLastMove({ piece: board[fromRow][fromCol]!, fromRow, fromCol, toRow, toCol });
+        return newBoard;
     }
 
     return board;
