@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { initializeBoard, isValidMove, makeAIMove, isCheckmate, setLastMove, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
-import styles from './Board.module.css';
+import styles from './Chess.module.css';
 import Square from './Square';
 
 const Board: React.FC = () => {
