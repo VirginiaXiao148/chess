@@ -40,7 +40,7 @@ export function isValidMove(board: (string | null)[][], pieceType: string, fromR
             isValid = isValidQueenMove(fromRow, fromCol, toRow, toCol) && isPathClear(board, fromRow, fromCol, toRow, toCol);
             break;
         case 'king':
-            isValid = isValidKingMove(rowDiff, colDiff);
+            isValid = isValidKingMove(rowDiff, colDiff) || isValidCastling(board, pieceType, fromRow, fromCol, toRow, toCol);
             break;
         default:
             isValid = false;
@@ -128,7 +128,7 @@ function isValidKingMove(rowDiff: number, colDiff: number) {
 }
 
 // Rule of 50 moves
-let positionHistory: string[] = [];
+const positionHistory: string[] = [];
 let halfMoveClock: number = 0;
 
 export function isThreefoldRepetition(board: (string | null)[][]): boolean {
@@ -153,8 +153,8 @@ export function incrementHalfMoveClock() {
 
 // Rule of castling
 
-let kingMoved = { white: false, black: false };
-let rookMoved = { 'white-0': false, 'white-7': false, 'black-0': false, 'black-7': false };
+const kingMoved = { white: false, black: false };
+const rookMoved = { 'white-0': false, 'white-7': false, 'black-0': false, 'black-7': false };
 
 export function setKingMoved(color: 'white' | 'black') {
     kingMoved[color] = true;

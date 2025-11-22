@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { initializeBoard, isValidMove, makeAIMove, isCheckmate, setLastMove, resetHalfMoveClock, incrementHalfMoveClock } from '../utils/chessLogic';
+import { initializeBoard, isValidMove, makeAIMove, isCheckmate, setLastMove, resetHalfMoveClock, incrementHalfMoveClock, setKingMoved, setRookMoved } from '../utils/chessLogic';
 import styles from '../styles/Chess.module.css';
 import Square from './Square';
 
@@ -30,6 +30,25 @@ const Board: React.FC = () => {
         newBoard[fromRow][fromCol] = null;
         setBoard(newBoard);
         setLastMove({ piece: board[fromRow][fromCol]!, fromRow, fromCol, toRow: row, toCol: col });
+
+        // Actualizar el estado de enroque si es necesario
+        if (newBoard[row][col]?.includes('king') && Math.abs(col - fromCol) === 2) {
+            const isKingSide = col > fromCol;
+            const rookCol = isKingSide ? 7 : 0;
+            const newRookCol = isKingSide ? col - 1 : col + 1;
+            
+            // Mover la torre automáticamente
+            newBoard[row][newRookCol] = newBoard[row][rookCol];
+            newBoard[row][rookCol] = null;
+        }
+        // Marcar rey y torre como movidos
+        if (newBoard[row][col]?.includes('king')) {
+            setKingMoved(currentPlayer);
+        }
+
+        if (newBoard[row][col]?.includes('rook')) {
+            setRookMoved(currentPlayer, fromCol as 0 | 7);
+        }
 
         if (newBoard[row][col]?.includes('pawn') && (row === 0 || row === 7)) {
           setPromotion({ row, col, color: currentPlayer });
