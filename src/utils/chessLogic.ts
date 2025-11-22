@@ -389,7 +389,6 @@ function minimax(board: (string | null)[][], depth: number, isMaximizing: boolea
 }
 
 export function makeAIMove(board: (string | null)[][], aiColor: 'white' | 'black'): (string | null)[][] {
-    const opponentColor = aiColor === 'white' ? 'black' : 'white';
     let bestMove: { fromRow: number, fromCol: number, toRow: number, toCol: number } | null = null;
     let bestScore = -Infinity;
 
