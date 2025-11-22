@@ -68,11 +68,13 @@ const Board: React.FC = () => {
           resetGame(); // Reiniciar el juego después de aceptar el mensaje
         } else {
           // IA move
-          if (currentPlayer === 'white') {
-            const aiBoard = makeAIMove(newBoard, 'black');
-            setBoard(aiBoard);
-            setCurrentPlayer('white');
-          }
+          setTimeout(() => {
+            if (currentPlayer === 'white') {
+              const aiBoard = makeAIMove(newBoard, 'black');
+              setBoard(aiBoard);
+              setCurrentPlayer('white');
+            }
+          }, 500);
         }
       } else {
         setSelectedPiece(null);
